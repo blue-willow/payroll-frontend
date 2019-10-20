@@ -6,32 +6,36 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-//redux
-import { connect } from 'react-redux';
-import { getReport } from '../redux/actions';
-import PropTypes from 'prop-types';
+import axios from 'axios';
 
-var report_ids = [1, 2, 3, 4, 5, 6, 7];
 class report extends Component {
-    componentDidMount() {
-        this.props.getReport();
-    }
+  state = {
+    loading: true,
+    reports: [],
+  }
+
+  componentDidMount() {
+    axios.get('/payrolls').then(res => {
+      console.log('----actions:::getReport:::', 'res.data: ', res.data);
+      this.setState({reports: res.data, loading: false});
+    }).catch(err => {
+      console.log('----actions:::getReport:::', 'err: ', err);
+    })
+  }
+
     render() {
-        console.log('----report:::render:::', 'this.props: ', this.props);
-        const {
-            data: {
-                report,
-                loading
-            }
-        } = this.props;
-        let reportMarkup = !loading ? (
-            report_ids.map(
-                (id) => (
+        let reportMarkup = !this.state.loading ? (
+            this.state.reports.map(
+                (report) => (
                     <Fragment>
                         <TableRow>
-                            <TableCell component="th" scope="row">{id}</TableCell>
-                            <TableCell align="right">1/11/2016 - 15/11/2016</TableCell>
-                            <TableCell align="right">$300.00</TableCell>
+                            <TableCell component="th" scope="row">
+                              {report.employee_id}
+                            </TableCell>
+                            <TableCell align="right">
+                              {report.start_date} - {report.end_date}
+                            </TableCell>
+                          <TableCell align="right">${report.amount_paid}</TableCell>
                         </TableRow>
                     </Fragment>
                 )
@@ -65,13 +69,4 @@ class report extends Component {
     }
 }
 
-report.propTypes = {
-    getReport: PropTypes.func.isRequired,
-    data: PropTypes.object.isRequired
-};
-
-const mapStateToProps = (state) => ({
-    data: state.data,
-});
-
-export default connect(mapStateToProps, { getReport })(report);
+export default report;
